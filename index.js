@@ -27,8 +27,11 @@
 const express = require('express')
 
 const app = express()
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsDoc = require('swagger-jsdoc');
 
 app.use(express.json())
+
 
 app.get("/", (req,res)=> {
     res.send("running backend server")
@@ -69,27 +72,20 @@ app.get('/about', (req,res)=> {
     })
 });
 
-app.post('/user', async (req,res)=>{
-    const user = req.body
-    const result = await usersCollection.insertOne(user)
-    res.json({
-        message:"User Recived",
-        data:result
-    })
-})
 
-app.get('/user', async (req,res)=> {
-    const users = await usersCollection.find().toArray()
-    res.json(users)
-    // res.json([
-    //     {id:1, name:"Romicha", role:"Frontend developer"},
-    //     {id:2, name:"Sahara", role:"Frontend developer"},
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "My API",
+      version: "1.0.0"
+    }
+  },
+  apis: ["index.js"]
+};
 
-    // ])
-})
-
-
-
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = "mongodb+srv://learning-backend:gv32YEO3cgZ7HB99@cluster0.dvev3.mongodb.net/?appName=Cluster0";
@@ -102,14 +98,14 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-
+let usersCollection;
 async function run() {
     
   try {
     // Connect the client to the server	(optional starting in v4.7)
 
 const database = client.db("backendDB");
-const usersCollection = database.collection("users");
+usersCollection = database.collection("users");
 console.log("mongodb connect susccessfull")
     await client.connect();
     // Send a ping to confirm a successful connection
@@ -122,6 +118,22 @@ console.log("mongodb connect susccessfull")
 }
 run().catch(console.dir);
 
+
+
+app.post('/user', async (req,res)=>{
+    const user = req.body
+    const result = await usersCollection.insertOne(user)
+    res.json({
+        message:"User Recived",
+        data:result
+    })
+})
+
+app.get('/user', async (req,res)=> {
+    const users = await usersCollection.find().toArray()
+    res.json(users)
+  
+})
 
 app.listen(4000, ()=> {
     console.log('server running port 4000')

@@ -15,7 +15,7 @@
 // })
 
 // app.get("/products", (req,res)=> {
-//     res.send("products route working  ")
+//     res.send("producroutets  working  ")
 // })
 
 // app.listen(3001, ()=> {
@@ -69,21 +69,59 @@ app.get('/about', (req,res)=> {
     })
 });
 
-app.post('/user',(req,res)=>{
+app.post('/user', async (req,res)=>{
     const user = req.body
+    const result = await usersCollection.insertOne(user)
     res.json({
         message:"User Recived",
-        data:user
+        data:result
     })
 })
 
-app.get('/user', (req,res)=> {
-    res.json([
-        {id:1, name:"Romicha", role:"Frontend developer"},
-        {id:2, name:"Sahara", role:"Frontend developer"},
+app.get('/user', async (req,res)=> {
+    const users = await usersCollection.find().toArray()
+    res.json(users)
+    // res.json([
+    //     {id:1, name:"Romicha", role:"Frontend developer"},
+    //     {id:2, name:"Sahara", role:"Frontend developer"},
 
-    ])
+    // ])
 })
+
+
+
+
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://learning-backend:gv32YEO3cgZ7HB99@cluster0.dvev3.mongodb.net/?appName=Cluster0";
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
+async function run() {
+    
+  try {
+    // Connect the client to the server	(optional starting in v4.7)
+
+const database = client.db("backendDB");
+const usersCollection = database.collection("users");
+console.log("mongodb connect susccessfull")
+    await client.connect();
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    // await client.close();
+  }
+}
+run().catch(console.dir);
+
 
 app.listen(4000, ()=> {
     console.log('server running port 4000')
